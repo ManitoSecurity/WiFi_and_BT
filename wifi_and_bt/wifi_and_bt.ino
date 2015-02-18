@@ -34,6 +34,7 @@ pri  7BMDzNyXeAf0Kl25JoW1
 url  https://data.sparkfun.com/streams/5JZO9K83dRU0KlA39EGZ
 ****************************************************************/
 
+//#include <Arduino.h>
 #include <SPI.h>
 #include <SFE_CC3000.h>
 #include <SFE_CC3000_Client.h>
@@ -46,7 +47,7 @@ url  https://data.sparkfun.com/streams/5JZO9K83dRU0KlA39EGZ
 #define CC3000_EN       7   // Can be any digital pin
 #define CC3000_CS       10  // Preferred is pin 10 on Uno
 #define IRPin           3 
-#define IRDummy         6
+//#define IRDummy         6
 #define bluetoothTx     4  // TX-O pin of bluetooth mate, Arduino D2
 #define bluetoothRx     5  // RX-I pin of bluetooth mate, Arduino D3
 //#define LED_PIN1        3
@@ -56,32 +57,30 @@ url  https://data.sparkfun.com/streams/5JZO9K83dRU0KlA39EGZ
 #define IP_ADDR_LEN     4   // Length of IP address in bytes
 
 // Constants
-unsigned int ap_security = WLAN_SEC_WEP; // Security of network
+unsigned int ap_security = WLAN_SEC_WPA2; // Security of network
 unsigned int timeout = 60000;             // Milliseconds
 
-char server[] = "data.sparkfun.com";      // sparkfun data
-char pub_key[] = "5JZO9K83dRU0KlA39EGZ";  // public key
+//char server[] = "data.sparkfun.com";      // sparkfun data
+/*char pub_key[] = "5JZO9K83dRU0KlA39EGZ";  // public key
 char pri_key[] = "7BMDzNyXeAf0Kl25JoW1";  // private key
-int waitTime= 30000;                      // limit update interval
-
+short waitTime= 15000;                      // limit update interval
+*/
 // Global Variables
 char ap_ssid[33];     // SSID of network
 char ap_password[33]; // Password of network
-IPAddress remote_ip;
-ConnectionInfo connection_info;
-int digiIRout;        // reading from IR
+//IPAddress remote_ip;
+//ConnectionInfo connection_info;
+short digiIRout;        // reading from IR
 boolean armed, alarmed, state_change;
-char postString[33];
-char phantReply[64];
+char postString[17];
+char phantReply[33];
 
 SFE_CC3000 wifi(CC3000_INT, CC3000_EN, CC3000_CS);
-Phant phant(server, pub_key, pri_key, wifi);
+Phant phant("data.sparkfun.com", "5JZO9K83dRU0KlA39EGZ", "7BMDzNyXeAf0Kl25JoW1", wifi);
 
-
-boolean connection_bt;
-char btReply[256];
-int loopCount;
-SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
+char btReply[33];
+short loopCount;
+SoftwareSerial bluetooth = SoftwareSerial(bluetoothTx, bluetoothRx);
 
 /***********************************************\
               Things for WiFi
@@ -89,11 +88,9 @@ SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 void initCC3000(){
 
   if ( wifi.init() ) {
-    Serial.print("CC3000 initialization complete");
-    Serial.print('\n'); 
+    Serial.print("CC3000 initialization complete \n");
   } else {
-    Serial.print("Something went wrong during CC3000 init!");
-    Serial.print('\n'); 
+    Serial.print("Something went wrong during CC3000 init! \n");
   }
   
 }
@@ -122,44 +119,44 @@ void connectToWiFi(){
   }
 }
 
-void showConnectionInfo(){
-  int i;
-  
-  if ( !wifi.getConnectionInfo(connection_info) ) {
-    Serial.print("Error: Could not obtain connection details");
-    Serial.print('\n'); 
-  } else {
-    Serial.print("IP Address: ");
-    for (i = 0; i < IP_ADDR_LEN; i++) {
-      Serial.print(connection_info.ip_address[i]);
-      if ( i < IP_ADDR_LEN - 1 ) {
-        Serial.print(".");
-      }
-    }
-    Serial.print('\n'); 
-  }  
-}
-
-void lookupServerIP(){
-  int i;
- 
-  Serial.print("Looking up IP address of: ");
-  Serial.print(server);
-  Serial.print('\n'); 
-  if ( !wifi.dnsLookup(server, &remote_ip) ) {
-    Serial.print("Error: Could not lookup host by name");
-    Serial.print('\n'); 
-  } else {
-    Serial.print("IP address found: ");
-    for (i = 0; i < IP_ADDR_LEN; i++) {
-      Serial.print(remote_ip[i], DEC);
-      if ( i < IP_ADDR_LEN - 1 ) {
-        Serial.print(".");
-      }
-    }
-    Serial.print('\n');
-  }
-}
+//void showConnectionInfo(){
+//  int i;
+//  
+//  if ( !wifi.getConnectionInfo(connection_info) ) {
+//    Serial.print("Error: Could not obtain connection details");
+//    Serial.print('\n'); 
+//  } else {
+//    Serial.print("IP Address: ");
+//    for (i = 0; i < IP_ADDR_LEN; i++) {
+//      Serial.print(connection_info.ip_address[i]);
+//      if ( i < IP_ADDR_LEN - 1 ) {
+//        Serial.print(".");
+//      }
+//    }
+//    Serial.print('\n'); 
+//  }  
+//}
+//
+//void lookupServerIP(){
+//  int i;
+// 
+//  Serial.print("Looking up IP address of: ");
+//  Serial.print("data.sparkfun.com");
+//  Serial.print('\n'); 
+//  if ( !wifi.dnsLookup("data.sparkfun.com", &remote_ip) ) {
+//    Serial.print("Error: Could not lookup host by name");
+//    Serial.print('\n'); 
+//  } else {
+//    Serial.print("IP address found: ");
+//    for (i = 0; i < IP_ADDR_LEN; i++) {
+//      Serial.print(remote_ip[i], DEC);
+//      if ( i < IP_ADDR_LEN - 1 ) {
+//        Serial.print(".");
+//      }
+//    }
+//    Serial.print('\n');
+//  }
+//}
 
 void setDisarmPost(){
   char string[] = "armed=F&alert=F";
@@ -200,7 +197,7 @@ void updateServer(){
   //delay(100);
   //if(connection) {
   //  Serial.print("Clearing data on ");
-  //  Serial.print(server);
+  //  Serial.print("data.sparkfun.com");
   //  Serial.print('\n');  
   //  phant.makeEmpty();
   //} else {
@@ -215,17 +212,17 @@ void updateServer(){
   delay(100);
   if(connection) { 
     Serial.print("Posting to ");
-    Serial.print(server);
+    Serial.print("data.sparkfun.com");
     Serial.print('\n'); 
     phant.post(postString);
   } else {
     Serial.print('\n');
     Serial.print("Failed to connect to ");
-    Serial.print(server); 
+    Serial.print("data.sparkfun.com"); 
     Serial.print('\n');   
   }
   
-  delay(waitTime);
+  delay(15000);
   
 } //end updateServer
 
@@ -237,7 +234,7 @@ void checkServer(){
   if(phant.connect()) {
     phant.get();
     Serial.print("Getting data from ");
-    Serial.print(server);
+    Serial.print("data.sparkfun.com");
     Serial.print('\n');
     Serial.print('\n'); 
     c = phant.recieve();
@@ -264,7 +261,7 @@ void checkServer(){
   } else {
     Serial.print('\n');
     Serial.print("Failed to connect to ");
-    Serial.print(server); 
+    Serial.print("data.sparkfun.com"); 
     Serial.print('\n');   
   }
   
@@ -395,22 +392,24 @@ void checkArmed_bt(){
   }
 }
 
-void checkBTConnection(){
+boolean checkBTConnection(){
+  boolean connection_bt;
   delay(100);
   sendCmd("GK");  
-  if(btReply[0] == '1') connection_bt = true;
-  else connection_bt = false;
+  if(btReply[0] == '1') return true;
+  else return false;
 }
 
-void checkBTStatus(){
+boolean checkBTStatus(){
   //checkArmed_bt();
-  
+  boolean connection = true; //assume true because checking takes forever
   //avoid delays that make arming and disarming difficult
   if(loopCount == 20){
-    checkBTConnection();
+    connection = checkBTConnection();
     loopCount = 0;
   }
   loopCount++;
+  return connection;
 }
 
 /***********************************************\
@@ -421,28 +420,11 @@ void setup() {
   
   // Initialize Serial port
   Serial.begin(115200);
-  Serial.print('\n'); 
-  Serial.print("---------------------------\n");
-  Serial.print("     Manito WiFi and BT    \n");
-  Serial.print("---------------------------\n");
+  Serial.print("\n     Manito WiFi and BT    \n\n");
   
   pinMode(IRPin, INPUT);
-  pinMode(IRDummy, OUTPUT);
-  digitalWrite(IRDummy, HIGH);
-
-  //WiFi setup
-  initCC3000();  
-  getWiFiInfo(); //WiFi command through serial
-  connectToWiFi();
-  showConnectionInfo();
-  lookupServerIP();
-   
-  state_change = true;
-  armed = true; alarmed = false;
-
-  setArmPost();
-  updateServer();
-  checkServer();
+  //pinMode(IRDummy, OUTPUT);
+  //digitalWrite(IRDummy, HIGH);
 
   //BT setup
   bluetooth.begin(9600);  
@@ -451,12 +433,25 @@ void setup() {
   // so be sure to fix you default SU,96
   delay(500);
   getReply(); 
-  sendCmd("D");
+  //sendCmd("D");
+  getSSID_bt();
+  getPASS_bt();
+
+  //WiFi setup
+  initCC3000();  
+  //getWiFiInfo(); //WiFi command through serial
+  connectToWiFi();
+  //showConnectionInfo();
+  //lookupServerIP();
+   
+  state_change = true;
+  armed = true; alarmed = false;
+
+  setArmPost();
+  updateServer();
+  checkServer();
   
-  Serial.print("       Setup Complete      ");
-  Serial.print('\n'); 
-  Serial.print("---------------------------");
-  Serial.print('\n'); 
+  Serial.print("\n       Setup Complete      \n\n");
   
 } //end setup
 
@@ -484,24 +479,31 @@ void loop() {
 	   checkServer();
 	   syncArmToServer();
 	   delay(100);
-       if( armed ) {
-	      updateServer();
-	   } else {
-		   syncAlertToServer();
-		   delay(100);
-		   Serial.println("disarmed");
-		   state_change = false;
-	   }
+        if( armed ) {
+	   updateServer();
+	} else {
+	   syncAlertToServer();
+	   delay(100);
+	   Serial.println("disarmed");
+	   state_change = false;
+	}
 	   
 	    state_change = false;
 	}
   
-	checkBTStatus();
-	if( connection_bt ) {
+	if( checkBTStatus() && armed ) {
 		setDisarmPost();
 		updateServer();
 		armed = false;
 		alarmed = false;
 	}
+
+        if( !armed ) {
+         checkServer();
+	   syncArmToServer();
+          setArmPost();
+         delay(30000);
+         delay(30000);
+        }
 
 } // end loop
