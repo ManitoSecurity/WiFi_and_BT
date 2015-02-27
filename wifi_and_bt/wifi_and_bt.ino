@@ -46,7 +46,7 @@ url  https://data.sparkfun.com/streams/5JZO9K83dRU0KlA39EGZ
 #define CC3000_INT      2   // Needs to be an interrupt pin (D2/D3)
 #define CC3000_EN       7   // Can be any digital pin
 #define CC3000_CS       10  // Preferred is pin 10 on Uno
-#define IRPin           3 
+#define IRPin           8 
 //#define IRDummy         6
 #define bluetoothTx     4  // TX-O pin of bluetooth mate, Arduino D2
 #define bluetoothRx     5  // RX-I pin of bluetooth mate, Arduino D3
@@ -496,6 +496,13 @@ void loop() {
 		updateServer();
 		armed = false;
 		alarmed = false;
+	}
+
+        if( !checkBTStatus() && !armed ) {
+		setArmPost();
+		armed = true;
+		alarmed = false;
+		updateServer();
 	}
 
         if( !armed ) {
