@@ -16,6 +16,8 @@ CC3000 info here: https://www.sparkfun.com/products/12072
   * bluetooth communication with rn41
   * for BT indicates 'X' when IR sensor picks up movement
   * master can send 'A' or 'D' to arm or disarm the device
+  * recieves WiFi login info over BT
+  * attempts connection, send E (error) or C (connected) BT 
   * must set BT baud to 9600 (SU,96<CR>)
 
   **TO DO**
@@ -28,6 +30,14 @@ CC3000 info here: https://www.sparkfun.com/products/12072
 
   **Versions**
     
+  *wifi_v0-0-4*
+   * untested
+   * adds 
+
+  *wifi_v0-0-3*
+   * mostly working
+   * major latency issues updating feed
+
   *wifi_v0-0-1*
    * initial code pile
    * does not work

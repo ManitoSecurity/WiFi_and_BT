@@ -109,14 +109,16 @@ void getWiFiInfo(){
   
 }
 
-void connectToWiFi(){
+boolean connectToWiFi(){
   Serial.print("Connecting to SSID: ");
   Serial.print(ap_ssid);
   Serial.print('\n'); 
   if(!wifi.connect(ap_ssid, ap_security, ap_password, timeout)) {
     Serial.print("Error: Could not connect to AP");
     Serial.print('\n'); 
+    return false;
   }
+  return true;
 }
 
 //void showConnectionInfo(){
@@ -171,7 +173,7 @@ void setDisarmPost(){
 
 void setArmPost(){
   char string[] = "armed=T&alert=F"; 
-    int j = 0;
+  int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
      j++;
@@ -245,9 +247,8 @@ void checkServer(){
       if ( (nl_cnt == 15) && (i < 62) ) {
          phantReply[i] = c; 
          i++;
-      } else {
-		if (c == '\n') 
-         nl_cnt++;
+      } else if (c == '\n') {
+            nl_cnt++;
       }  
       
 	  //Serial.print(c); useful for debug
@@ -269,9 +270,9 @@ void checkServer(){
 
 void syncArmToServer(){
     if( phantReply[2] == 'F') 
-		armed = false;
-	else 
-		armed = true;
+    	armed = false;
+    else 
+	armed = true;
 }
 
 void syncAlertToServer(){
@@ -423,8 +424,6 @@ void setup() {
   Serial.print("\n     Manito WiFi and BT    \n\n");
   
   pinMode(IRPin, INPUT);
-  //pinMode(IRDummy, OUTPUT);
-  //digitalWrite(IRDummy, HIGH);
 
   //BT setup
   bluetooth.begin(9600);  
@@ -433,16 +432,17 @@ void setup() {
   // so be sure to fix you default SU,96
   delay(500);
   getReply(); 
-  //sendCmd("D");
   getSSID_bt();
   getPASS_bt();
 
   //WiFi setup
-  initCC3000();  
-  //getWiFiInfo(); //WiFi command through serial
-  connectToWiFi();
-  //showConnectionInfo();
-  //lookupServerIP();
+  initCC3000();
+  if(!connectToWiFi()){
+     sendMsg("E");
+     while(true);
+  }
+  else
+     sendMsg("C");
    
   state_change = true;
   armed = true; alarmed = false;
@@ -460,57 +460,38 @@ void loop() {
     
 	//delay(30000);
     digiIRout = digitalRead(IRPin);
-    
-	if ( armed ) {
-		if(digiIRout == LOW) { 
-		  setAlertPost();
-		  state_change = !alarmed; //if not alarming you changed!
-		  alarmed = true;
-		} else {
-		  setArmPost();
-		  state_change = alarmed;
-		  alarmed = false;
-		}
-	
-	}
-
-	if( state_change ) {
-		
-	   checkServer();
-	   syncArmToServer();
-	   delay(100);
-        if( armed ) {
-	   updateServer();
+    if ( armed ) {
+	if(digiIRout == LOW) { 
+             setAlertPost();
+	     state_change = !alarmed; //if not alarming you changed!
+	     alarmed = true;
 	} else {
+             setArmPost();
+	     state_change = alarmed;
+	     alarmed = false;
+	}
+	
+    }
+
+    if( state_change ) {
+       checkServer();
+       syncArmToServer();
+       delay(100);
+       if( armed ) {
+           updateServer();
+       } else {
 	   syncAlertToServer();
 	   delay(100);
 	   Serial.println("disarmed");
 	   state_change = false;
-	}
-	   
-	    state_change = false;
-	}
+       }
   
-	if( checkBTStatus() && armed ) {
-		setDisarmPost();
-		updateServer();
-		armed = false;
-		alarmed = false;
-	}
-
-        if( !checkBTStatus() && !armed ) {
-		setArmPost();
-		armed = true;
-		alarmed = false;
-		updateServer();
-	}
-
-        if( !armed ) {
-         checkServer();
-	   syncArmToServer();
-          setArmPost();
-         delay(30000);
-         delay(30000);
+       if( !armed ) {
+          checkServer();
+	  syncArmToServer();
+          delay(30000);
+          delay(30000);
         }
+    }
 
 } // end loop
