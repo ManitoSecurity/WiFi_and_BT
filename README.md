@@ -30,9 +30,14 @@ CC3000 info here: https://www.sparkfun.com/products/12072
 
   **Versions**
     
+  *wifi_v0-0-5*
+   * not working
+   * phone field added to phant
+   * improved communication to phant
+    
   *wifi_v0-0-4*
    * untested
-   * adds 
+   * adds confirmation of wifi connection
 
   *wifi_v0-0-3*
    * mostly working

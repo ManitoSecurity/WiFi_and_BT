@@ -34,12 +34,12 @@ pri  7BMDzNyXeAf0Kl25JoW1
 url  https://data.sparkfun.com/streams/5JZO9K83dRU0KlA39EGZ
 ****************************************************************/
 
-//#include <Arduino.h>
+#include <Arduino.h>
 #include <SPI.h>
 #include <SFE_CC3000.h>
 #include <SFE_CC3000_Client.h>
-#include <myPhant.h>
-
+#include "myPhant.h"
+#include "rgb_led.h"
 #include <SoftwareSerial.h> 
 
 // Pins
@@ -161,7 +161,7 @@ boolean connectToWiFi(){
 //}
 
 void setDisarmPost(){
-  char string[] = "armed=F&alert=F";
+  char string[] = "armed=F&alert=F&phone=0008675309";
   int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
@@ -172,7 +172,7 @@ void setDisarmPost(){
 }
 
 void setArmPost(){
-  char string[] = "armed=T&alert=F"; 
+  char string[] = "armed=T&alert=F&phone=0008675309"; 
   int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
@@ -183,7 +183,7 @@ void setArmPost(){
 }
 
 void setAlertPost(){
-  char string[] = "armed=T&alert=T";
+  char string[] = "armed=T&alert=T&phone=0008675309";
     int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
@@ -195,7 +195,7 @@ void setAlertPost(){
 
 void updateServer(){  
 
-  boolean connection = phant.connect();
+  //boolean connection = phant.connect();
   //delay(100);
   //if(connection) {
   //  Serial.print("Clearing data on ");
@@ -212,20 +212,21 @@ void updateServer(){
   //
   //connection = phant.connect();
   delay(100);
-  if(connection) { 
-    Serial.print("Posting to ");
-    Serial.print("data.sparkfun.com");
-    Serial.print('\n'); 
+  if(phant.connect()) {
+    turn_on_purple(); 
     phant.post(postString);
   } else {
-    Serial.print('\n');
-    Serial.print("Failed to connect to ");
-    Serial.print("data.sparkfun.com"); 
-    Serial.print('\n');   
+    turn_on_red();
+    while(true);
   }
-  
-  delay(15000);
-  
+  delay(2000);
+  char c = phant.recieve();
+  for(int i = 0; i < 100; i++){
+    Serial.print(c);
+    c = phant.recieve();
+  }
+  delay(1000);
+  turn_on_blue();
 } //end updateServer
 
 void checkServer(){ 
@@ -251,7 +252,7 @@ void checkServer(){
             nl_cnt++;
       }  
       
-	  //Serial.print(c); useful for debug
+	  //Serial.print(c); //useful for debug
       c = phant.recieve();
     }
 	    
@@ -269,14 +270,14 @@ void checkServer(){
 }
 
 void syncArmToServer(){
-    if( phantReply[2] == 'F') 
+    if( phantReply[13] == 'F') 
     	armed = false;
     else 
 	armed = true;
 }
 
 void syncAlertToServer(){
-	if( phantReply[0] == 'T') 
+	if( phantReply[11] == 'T') 
 		alarmed = true;
 	else  
 		alarmed = false;
@@ -424,7 +425,7 @@ void setup() {
   Serial.print("\n     Manito WiFi and BT    \n\n");
   
   pinMode(IRPin, INPUT);
-
+  init_rgb_led();
   //BT setup
   bluetooth.begin(9600);  
   // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
@@ -432,18 +433,25 @@ void setup() {
   // so be sure to fix you default SU,96
   delay(500);
   getReply(); 
+  
+  turn_on_red();
+  
+  //WiFi setup
   getSSID_bt();
   getPASS_bt();
-
-  //WiFi setup
   initCC3000();
+  turn_on_blue();
   if(!connectToWiFi()){
-     sendMsg("E");
-     while(true);
+    turn_on_red();
+    sendMsg("E");
+    while(true){
+       turn_on_red();
+       turn_on_blue();
+    }
   }
   else
      sendMsg("C");
-   
+  turn_on_green(); 
   state_change = true;
   armed = true; alarmed = false;
 
@@ -457,8 +465,7 @@ void setup() {
 
 
 void loop() {
-    
-	//delay(30000);
+    turn_on_blue();
     digiIRout = digitalRead(IRPin);
     if ( armed ) {
 	if(digiIRout == LOW) { 
@@ -470,7 +477,6 @@ void loop() {
 	     state_change = alarmed;
 	     alarmed = false;
 	}
-	
     }
 
     if( state_change ) {
