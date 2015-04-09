@@ -72,7 +72,7 @@ char ap_password[33]; // Password of network
 //ConnectionInfo connection_info;
 short digiIRout;        // reading from IR
 boolean armed, alarmed, state_change;
-char postString[17];
+char postString[33];
 char phantReply[33];
 
 SFE_CC3000 wifi(CC3000_INT, CC3000_EN, CC3000_CS);
@@ -184,7 +184,7 @@ void setArmPost(){
 
 void setAlertPost(){
   char string[] = "armed=T&alert=T&phone=0008675309";
-    int j = 0;
+  int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
      j++;
@@ -219,13 +219,8 @@ void updateServer(){
     turn_on_red();
     while(true);
   }
-  delay(2000);
-  char c = phant.recieve();
-  for(int i = 0; i < 100; i++){
-    Serial.print(c);
-    c = phant.recieve();
-  }
-  delay(1000);
+  sendMsg("X");
+  delay(10000);
   turn_on_blue();
 } //end updateServer
 
@@ -444,10 +439,8 @@ void setup() {
   if(!connectToWiFi()){
     turn_on_red();
     sendMsg("E");
-    while(true){
-       turn_on_red();
-       turn_on_blue();
-    }
+    turn_on_red();
+    while(true);
   }
   else
      sendMsg("C");
@@ -466,9 +459,10 @@ void setup() {
 
 void loop() {
     turn_on_blue();
+    state_change = false;
     digiIRout = digitalRead(IRPin);
     if ( armed ) {
-	if(digiIRout == LOW) { 
+	if(digiIRout == HIGH) { 
              setAlertPost();
 	     state_change = !alarmed; //if not alarming you changed!
 	     alarmed = true;
@@ -489,7 +483,6 @@ void loop() {
 	   syncAlertToServer();
 	   delay(100);
 	   Serial.println("disarmed");
-	   state_change = false;
        }
   
        if( !armed ) {

@@ -9,11 +9,11 @@
 
 #include <Arduino.h>
 
-#define LED_R 3
+#define LED_R 9
 #define LED_G 6
-#define LED_B 9
-#define OFF   255
-#define ON    250  
+#define LED_B 3
+#define OFF   0
+#define ON    5  
 
 void init_rgb_led();
 

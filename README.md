@@ -26,9 +26,14 @@ CC3000 info here: https://www.sparkfun.com/products/12072
 
   **Known Problems**
   * trouble with WEP security- might have to send key as hex (see wlan.h in WiFi library's utility)
-  * wierd error on CC3000 objects
 
   **Versions**
+    
+  *wifi_v0-0-6*
+   * working
+   * connects to WiFi and phant
+   * updates server as intended
+   * not fully tested yet
     
   *wifi_v0-0-5*
    * not working

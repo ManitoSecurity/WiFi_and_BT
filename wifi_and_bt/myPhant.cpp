@@ -136,7 +136,6 @@ void Phant::post(char* params)
   _client.print("Content-Length: 32");
   _client.print("\n\n");
   _client.print(params);
-  //_client.print("armed=T&alert=F&phone=0008675309");
   _client.print("\n");
 
   _params[0] = '\0';
