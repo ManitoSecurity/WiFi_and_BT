@@ -72,7 +72,7 @@ char ap_password[33]; // Password of network
 //ConnectionInfo connection_info;
 short digiIRout;        // reading from IR
 boolean armed, alarmed, state_change;
-char postString[33];
+char postString[17];
 char phantReply[33];
 
 SFE_CC3000 wifi(CC3000_INT, CC3000_EN, CC3000_CS);
@@ -161,7 +161,7 @@ boolean connectToWiFi(){
 //}
 
 void setDisarmPost(){
-  char string[] = "armed=F&alert=F&phone=0008675309";
+  char string[] = "armed=F&alert=F";
   int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
@@ -172,7 +172,7 @@ void setDisarmPost(){
 }
 
 void setArmPost(){
-  char string[] = "armed=T&alert=F&phone=0008675309"; 
+  char string[] = "armed=T&alert=F"; 
   int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
@@ -183,10 +183,10 @@ void setArmPost(){
 }
 
 void setAlertPost(){
-  char string[] = "armed=T&alert=T&phone=0008675309";
+  char string[] = "armed=T&alert=T";
   int j = 0;
   while(string[j] != '\0') {
-     postString[j] = string[j];
+     postString[j] = string[j]; 
      j++;
   }
 
@@ -219,7 +219,15 @@ void updateServer(){
     turn_on_red();
     while(true);
   }
-  sendMsg("X");
+  //sendMsg("X");
+  
+  //delay(2000);
+  //char c = phant.recieve(); //for debugging
+  //for(int bs = 0; bs < 30; bs++){
+   //Serial.print(c);
+   //c = phant.recieve(); 
+  //}
+  
   delay(10000);
   turn_on_blue();
 } //end updateServer
@@ -247,7 +255,7 @@ void checkServer(){
             nl_cnt++;
       }  
       
-	  //Serial.print(c); //useful for debug
+      //Serial.print(c); //useful for debug
       c = phant.recieve();
     }
 	    

@@ -133,9 +133,10 @@ void Phant::post(char* params)
   _client.println("Connection: close");
   _client.println("Content-Type: application/x-www-form-urlencoded");
   //_client.print("Content-Length: "); _client.print(_param_length);
-  _client.print("Content-Length: 32");
+  _client.print("Content-Length: 47");
   _client.print("\n\n");
   _client.print(params);
+  _client.print("&phone=0008675309&sleep=F&away=F");
   _client.print("\n");
 
   _params[0] = '\0';
