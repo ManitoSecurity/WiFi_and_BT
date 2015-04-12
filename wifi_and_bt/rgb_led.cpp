@@ -36,3 +36,21 @@ void turn_on_purple() {
   analogWrite(LED_G, OFF);
   analogWrite(LED_B, ON);
 }
+
+void turn_on_GB() {
+  analogWrite(LED_R, OFF);
+  analogWrite(LED_G, ON);
+  analogWrite(LED_B, ON);
+}
+
+void turn_on_white() {
+  analogWrite(LED_R, ON); 
+  analogWrite(LED_G, ON);
+  analogWrite(LED_B, ON);
+}
+
+void turn_on_RG() {
+  analogWrite(LED_R, ON);
+  analogWrite(LED_G, ON);
+  analogWrite(LED_B, OFF);
+}

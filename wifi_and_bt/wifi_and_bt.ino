@@ -341,22 +341,24 @@ void getSSID_bt(){
   bluetooth.print("enter SSID");
   
   while( ((char)data != '#') && (j < 33) ){
+    turn_on_red();
+    bluetooth.print(data);
     if(bluetooth.available() > 0){
       data = bluetooth.read(); 
       delay(200);
+      bluetooth.print(data);
     
     
       if((char)data != '#'){
         ap_ssid[j] = (char)data; 
         j++;
       }
-    }    
+    }
+    turn_on_green();
+    delay(1);    
   }
   
   ap_ssid[j] = '\0';
-  
-  Serial.print("SSID: ");
-  Serial.println(ap_ssid);
 }
 
 void getPASS_bt(){
@@ -428,7 +430,7 @@ void setup() {
   Serial.print("\n     Manito WiFi and BT    \n\n");
   
   pinMode(IRPin, INPUT);
-  init_rgb_led();
+  //init_rgb_led();
   //BT setup
   bluetooth.begin(9600);  
   // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
@@ -437,17 +439,29 @@ void setup() {
   delay(500);
   getReply(); 
   
-  turn_on_red();
+  turn_on_purple();
   
   //WiFi setup
   getSSID_bt();
   getPASS_bt();
+/*   char ssid_weefee[] = {'w', 'e', 'e', 'f', 'e', 'e', '\0'};
+   char secret_pass_thing[] = {'a','b','c','d','e','f','g','h','i','j','k','\0'};
+   int num = 0;
+   do{
+      ap_ssid[num] = ssid_weefee[num];     
+   }while(ssid_weefee[num++] != '\0');
+   num = 0;
+   do{
+      ap_password[num] = secret_pass_thing[num];  
+   }while(secret_pass_thing[num++] != '\0');
+  */ 
+  turn_on_red();
   initCC3000();
   turn_on_blue();
+  delay(1000);
   if(!connectToWiFi()){
     turn_on_red();
     sendMsg("E");
-    turn_on_red();
     while(true);
   }
   else
