@@ -14,11 +14,11 @@ CC3000 info here: https://www.sparkfun.com/products/12072
   * will post to https://data.sparkfun.com/streams/5JZO9K83dRU0KlA39EGZ
   * uses myPhant class
   * bluetooth communication with rn41
+  * for BT indicates 'X' when IR sensor picks up movement
+  * master can send 'A' or 'D' to arm or disarm the device
   * recieves WiFi login info over BT
   * attempts connection, send E (error) or C (connected) BT 
   * must set BT baud to 9600 (SU,96<CR>)
-  * In older versions: BT indicates 'X' when IR sensor picks up movement
-  *                    phone can send 'A' or 'D' to arm or disarm the device
 
   **TO DO**
   * make it work!
@@ -28,10 +28,6 @@ CC3000 info here: https://www.sparkfun.com/products/12072
   * trouble with WEP security- might have to send key as hex (see wlan.h in WiFi library's utility)
 
   **Versions**
-
-  *wifi_v0-0-7*
-   * working
-   * minor updates for feed changes
     
   *wifi_v0-0-6*
    * working
