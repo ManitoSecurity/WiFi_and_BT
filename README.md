@@ -29,6 +29,12 @@ CC3000 info here: https://www.sparkfun.com/products/12072
 
   **Versions**
     
+  *wifi_v0-1-0*
+   * working
+   * major logic changes
+   * does not check for arming of system
+   * resolved LED problem (probably)
+    
   *wifi_v0-0-6*
    * working
    * connects to WiFi and phant

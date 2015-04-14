@@ -56,6 +56,8 @@ url  https://data.sparkfun.com/streams/5JZO9K83dRU0KlA39EGZ
 // Connection info data lengths
 #define IP_ADDR_LEN     4   // Length of IP address in bytes
 
+void looper(void);
+
 // Constants
 unsigned int ap_security = WLAN_SEC_WPA2; // Security of network
 unsigned int timeout = 60000;             // Milliseconds
@@ -72,7 +74,7 @@ char ap_password[33]; // Password of network
 //ConnectionInfo connection_info;
 short digiIRout;        // reading from IR
 boolean armed, alarmed, state_change;
-char postString[33];
+char postString[16];
 char phantReply[33];
 
 SFE_CC3000 wifi(CC3000_INT, CC3000_EN, CC3000_CS);
@@ -161,7 +163,7 @@ boolean connectToWiFi(){
 //}
 
 void setDisarmPost(){
-  char string[] = "armed=F&alert=F&phone=0008675309";
+  char string[] = "armed=F&alert=F";
   int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
@@ -172,7 +174,7 @@ void setDisarmPost(){
 }
 
 void setArmPost(){
-  char string[] = "armed=T&alert=F&phone=0008675309"; 
+  char string[] = "armed=T&alert=F"; 
   int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
@@ -183,7 +185,7 @@ void setArmPost(){
 }
 
 void setAlertPost(){
-  char string[] = "armed=T&alert=T&phone=0008675309";
+  char string[] = "armed=T&alert=T";
   int j = 0;
   while(string[j] != '\0') {
      postString[j] = string[j];
@@ -220,6 +222,10 @@ void updateServer(){
     while(true);
   }
   sendMsg("X");
+  
+  delay(2000);
+  for(int num = 0; num < 20; num++) bluetooth.print(phant.recieve());
+  
   delay(10000);
   turn_on_blue();
 } //end updateServer
@@ -333,12 +339,11 @@ void getSSID_bt(){
   bluetooth.print("enter SSID");
   
   while( ((char)data != '#') && (j < 33) ){
-    turn_on_red();
-    bluetooth.print(data);
+    turn_on_green();
+    delay(5);
     if(bluetooth.available() > 0){
       data = bluetooth.read(); 
       delay(200);
-      bluetooth.print(data);
     
     
       if((char)data != '#'){
@@ -346,8 +351,8 @@ void getSSID_bt(){
         j++;
       }
     }
-    turn_on_green();
-    delay(1);    
+    turn_on_blue();
+    delay(5);    
   }
   
   ap_ssid[j] = '\0';
@@ -358,18 +363,19 @@ void getPASS_bt(){
   int data = 0;
   
   bluetooth.print("enter password.");
-  
   while( ((char)data != '#') && (j < 33) ){
+    turn_on_green();    
+    delay(5);
     if(bluetooth.available() > 0){
       data = bluetooth.read(); 
       delay(200);
-    
-    
       if((char)data != '#'){
         ap_password[j] = (char)data; 
         j++;
       }
-    }    
+    }
+    turn_on_red();    
+    delay(5);
   }
   
   ap_password[j] = '\0';
@@ -416,27 +422,29 @@ boolean checkBTStatus(){
 \***********************************************/
 
 void setup() {
-  
+  turn_on_white();
+  delay(1000);
   // Initialize Serial port
   Serial.begin(115200);
   Serial.print("\n     Manito WiFi and BT    \n\n");
   
   pinMode(IRPin, INPUT);
-  //init_rgb_led();
+  init_rgb_led();
+  turn_on_red();
   //BT setup
   bluetooth.begin(9600);  
   // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
   // The Bluetooth Mate defaults to 115200bps
   // so be sure to fix you default SU,96
-  delay(500);
+  delay(1500);
   getReply(); 
   
-  turn_on_purple();
-  
+  turn_on_blue();
+  delay(1500);
   //WiFi setup
   getSSID_bt();
   getPASS_bt();
-/*   char ssid_weefee[] = {'w', 'e', 'e', 'f', 'e', 'e', '\0'};
+   /*char ssid_weefee[] = {'w', 'e', 'e', 'f', 'e', 'e', '\0'};
    char secret_pass_thing[] = {'a','b','c','d','e','f','g','h','i','j','k','\0'};
    int num = 0;
    do{
@@ -446,11 +454,12 @@ void setup() {
    do{
       ap_password[num] = secret_pass_thing[num];  
    }while(secret_pass_thing[num++] != '\0');
-  */ 
-  turn_on_red();
+  */
+  turn_on_purple();
+  delay(1500);
   initCC3000();
-  turn_on_blue();
-  delay(1000);
+  turn_on_white();
+  delay(1500);
   if(!connectToWiFi()){
     turn_on_red();
     sendMsg("E");
@@ -458,25 +467,47 @@ void setup() {
   }
   else
      sendMsg("C");
-  turn_on_green(); 
+  turn_on_RG(); 
   state_change = true;
   armed = true; alarmed = false;
 
   setArmPost();
   updateServer();
   checkServer();
+  turn_on_purple();
+
+  bluetooth.print("\n       Setup Complete      \n\n");
+  delay(1000);
+  turn_on_RG();
+  delay(1000);  
+  turn_on_GB();
+  delay(1000);
   
-  Serial.print("\n       Setup Complete      \n\n");
-  
+  looper();
+   
 } //end setup
 
 
-void loop() {
-    turn_on_blue();
+void looper() {
+  for(;;){
+    turn_on_green();
+    digiIRout = digitalRead(IRPin);
+    if(digiIRout == LOW) { 
+      setAlertPost();
+      updateServer();
+      turn_on_red();
+      delay(30000);
+      turn_on_blue();
+      delay(30001);
+    }
+  }
+      
+/* 
+  turn_on_blue();
     state_change = false;
     digiIRout = digitalRead(IRPin);
     if ( armed ) {
-	if(digiIRout == HIGH) { 
+	if(digiIRout == LOW) { 
              setAlertPost();
 	     state_change = !alarmed; //if not alarming you changed!
 	     alarmed = true;
@@ -486,7 +517,7 @@ void loop() {
 	     alarmed = false;
 	}
     }
-
+    turn_on_red();
     if( state_change ) {
        checkServer();
        syncArmToServer();
@@ -506,5 +537,7 @@ void loop() {
           delay(30000);
         }
     }
+*/
+} // end looper
 
-} // end loop
+void loop(){}
