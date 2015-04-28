@@ -13,7 +13,7 @@
 #define LED_G 6
 #define LED_B 3
 #define OFF   0
-#define ON    10  
+#define ON    20  
 
 void init_rgb_led();
 

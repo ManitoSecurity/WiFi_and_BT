@@ -224,7 +224,7 @@ void updateServer(){
   sendMsg("X");
   
   delay(2000);
-  //for(int num = 0; num < 20; num++) bluetooth.print(phant.recieve());
+  for(int num = 0; num < 20; num++) bluetooth.print(phant.recieve());
   
   delay(10000);
   turn_on_blue();
@@ -432,7 +432,7 @@ void setup() {
   init_rgb_led();
   turn_on_red();
   delay(500);
-
+  /*
   //BT setup
   bluetooth.begin(9600);  
   // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
@@ -456,7 +456,7 @@ void setup() {
    do{
       ap_password[num] = secret_pass_thing[num];  
    }while(secret_pass_thing[num++] != '\0');
-  */
+  
   turn_on_purple();
   delay(1500);
   initCC3000();
@@ -478,42 +478,38 @@ void setup() {
   checkServer();
   turn_on_purple();
 
-  //bluetooth.print("\n       Setup Complete      \n\n");
+  bluetooth.print("\n       Setup Complete      \n\n");
   delay(1000);
   turn_on_RG();
   delay(1000);  
   turn_on_GB();
   delay(1000);
-  
+  */
   looper();
    
 } //end setup
 
 
 void looper() {
-  int count;
-  turn_on_purple();  
+  turn_on_purple();
   delay(1000);
   for(;;){
-    count = 0;
     //turn_on_purple();
     digiIRout = digitalRead(IRPin);
-    while( (digiIRout == LOW) && (count < 70) ) { 
-      delay(7);
-      count++;
-      digiIRout = digitalRead(IRPin);
+    if(digiIRout == HIGH) { 
+      delay(500);
+      if(digiIRout == HIGH) { 
+        //setAlertPost();
+        //updateServer();
+        turn_on_red();
+        delay(1000);
+        turn_on_blue();
+        delay(500);
+      }
     }
-    if(count == 50) { 
-      setAlertPost();
-      updateServer();
-      turn_on_red();
-      delay(1000);
-      turn_on_blue();
-      delay(30000);
-    }
-    if(digiIRout == HIGH)
+    if(digiIRout == LOW)
       turn_on_green();
-    delay(100);
+    delay(5);
   }
       
  
